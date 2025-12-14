@@ -68,7 +68,7 @@ public class TeamsControllerShortcuts : ITeamsController
             Log.Info($"Attempting reaction '{name}'. TODO: refine navigation to specific reaction.");
 
             // TODO: Confirm the shortcut to open the reactions menu in the new Teams client.
-            KeyboardInputHelper.SendKeyChord(Keys.ControlKey, Keys.ShiftKey, Keys.Period);
+            KeyboardInputHelper.SendKeyChord(Keys.ControlKey, Keys.ShiftKey, Keys.OemPeriod);
             Thread.Sleep(50);
 
             // TODO: Navigate to a specific reaction; this is a placeholder best-effort sequence.

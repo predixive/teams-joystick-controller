@@ -1,0 +1,56 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "TeamsJoystickController.App/1.0.0": {
+        "dependencies": {
+          "TeamsJoystickController.Core": "1.0.0",
+          "TeamsJoystickController.Interop": "1.0.0"
+        },
+        "runtime": {
+          "TeamsJoystickController.App.dll": {}
+        }
+      },
+      "TeamsJoystickController.Core/1.0.0": {
+        "dependencies": {
+          "TeamsJoystickController.Interop": "1.0.0"
+        },
+        "runtime": {
+          "TeamsJoystickController.Core.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "TeamsJoystickController.Interop/1.0.0": {
+        "runtime": {
+          "TeamsJoystickController.Interop.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TeamsJoystickController.App/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TeamsJoystickController.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TeamsJoystickController.Interop/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
