@@ -12,7 +12,7 @@ using TeamsJoystickController.Interop.RawInput;
 
 namespace TeamsJoystickController.App;
 
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     private const int WM_INPUT = 0x00FF;
 
