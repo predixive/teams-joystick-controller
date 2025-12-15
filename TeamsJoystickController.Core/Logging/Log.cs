@@ -8,12 +8,15 @@ public static class Log
 {
     private static readonly object _lock = new();
     private static readonly string _logFilePath;
+    private static readonly string _logBackupPath;
+    private const long MaxLogSizeBytes = 1 * 1024 * 1024;
 
     static Log()
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var logDirectory = Path.Combine(appData, "TeamsJoystickController", "logs");
         _logFilePath = Path.Combine(logDirectory, "log.txt");
+        _logBackupPath = Path.Combine(logDirectory, "log.1.txt");
 
         try
         {
@@ -28,6 +31,11 @@ public static class Log
     public static void Info(string message)
     {
         Write("INFO", message);
+    }
+
+    public static void Debug(string message)
+    {
+        Write("DEBUG", message);
     }
 
     public static void Warn(string message)
@@ -65,6 +73,7 @@ public static class Log
 
             lock (_lock)
             {
+                RotateIfNeeded(line.Length);
                 File.AppendAllText(_logFilePath, line);
             }
         }
@@ -73,5 +82,25 @@ public static class Log
             // Swallow logging failures to avoid crashing the app.
         }
     }
-}
 
+    private static void RotateIfNeeded(int upcomingBytes)
+    {
+        try
+        {
+            var fileInfo = new FileInfo(_logFilePath);
+            if (fileInfo.Exists && fileInfo.Length + upcomingBytes > MaxLogSizeBytes)
+            {
+                if (File.Exists(_logBackupPath))
+                {
+                    File.Delete(_logBackupPath);
+                }
+
+                File.Move(_logFilePath, _logBackupPath);
+            }
+        }
+        catch
+        {
+            // Swallow rotation issues to avoid impacting logging.
+        }
+    }
+}

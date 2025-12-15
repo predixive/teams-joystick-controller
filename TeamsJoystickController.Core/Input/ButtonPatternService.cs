@@ -18,18 +18,33 @@ public class ButtonPatternService : IDisposable
     private TimingConfig _timingConfig;
     private readonly Dictionary<int, ButtonPressState> _states = new();
     private readonly object _sync = new();
+    private readonly HashSet<int> _allowedButtons;
     private bool _disposed;
 
-    public ButtonPatternService(TimingConfig timingConfig)
+    public ButtonPatternService(TimingConfig timingConfig, IEnumerable<int> allowedButtons)
     {
         _timingConfig = timingConfig ?? throw new ArgumentNullException(nameof(timingConfig));
+        _allowedButtons = new HashSet<int>(allowedButtons ?? Array.Empty<int>());
     }
 
     public event Action<int, PressPattern>? ButtonPatternDetected;
 
     public void OnButtonDown(int buttonId)
     {
-        Log.Info($"Button down received for button {buttonId}");
+        if (_disposed)
+        {
+            return;
+        }
+
+        lock (_sync)
+        {
+            if (!_allowedButtons.Contains(buttonId))
+            {
+                return;
+            }
+        }
+
+        Log.Debug($"Button down received for button {buttonId}");
     }
 
     public void UpdateTiming(TimingConfig timingConfig)
@@ -47,6 +62,51 @@ public class ButtonPatternService : IDisposable
         Log.Info("Timing configuration updated for button pattern detection.");
     }
 
+    public void UpdateAllowedButtons(IEnumerable<int> allowedButtons)
+    {
+        if (allowedButtons == null)
+        {
+            throw new ArgumentNullException(nameof(allowedButtons));
+        }
+
+        List<Timer> timersToDispose = new();
+
+        lock (_sync)
+        {
+            _allowedButtons.Clear();
+            foreach (var buttonId in allowedButtons)
+            {
+                _allowedButtons.Add(buttonId);
+            }
+
+            var toRemove = new List<int>();
+            foreach (var kvp in _states)
+            {
+                if (_allowedButtons.Contains(kvp.Key))
+                {
+                    continue;
+                }
+
+                if (kvp.Value.Timer != null)
+                {
+                    timersToDispose.Add(kvp.Value.Timer);
+                }
+
+                toRemove.Add(kvp.Key);
+            }
+
+            foreach (var key in toRemove)
+            {
+                _states.Remove(key);
+            }
+        }
+
+        foreach (var timer in timersToDispose)
+        {
+            timer.Dispose();
+        }
+    }
+
     public void OnButtonUp(int buttonId)
     {
         if (_disposed)
@@ -54,10 +114,15 @@ public class ButtonPatternService : IDisposable
             return;
         }
 
-        Log.Info($"Button up received for button {buttonId}");
-
         lock (_sync)
         {
+            if (!_allowedButtons.Contains(buttonId))
+            {
+                return;
+            }
+
+            Log.Debug($"Button up received for button {buttonId}");
+
             if (!_states.TryGetValue(buttonId, out var state))
             {
                 state = new ButtonPressState(buttonId);

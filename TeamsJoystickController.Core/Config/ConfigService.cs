@@ -93,7 +93,9 @@ public class ConfigService
             },
             Teams = new TeamsConfig
             {
-                SharePreferredMonitorIndex = 1
+                SharePreferredMonitorIndex = 1,
+                FocusSettleMs = 150,
+                PostSendHoldMs = 350
             },
             Timing = new TimingConfig
             {
