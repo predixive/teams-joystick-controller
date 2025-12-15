@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TeamsJoystickController.Interop")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9b24740d163f93c1884fdd78c8b9aaa6d67beaf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+04ecae8636d47fcc9ca665a11bc54c0e846f3b82")]
 [assembly: System.Reflection.AssemblyProductAttribute("TeamsJoystickController.Interop")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TeamsJoystickController.Interop")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

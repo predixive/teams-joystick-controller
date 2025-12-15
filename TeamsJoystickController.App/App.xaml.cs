@@ -23,7 +23,9 @@ public partial class App : System.Windows.Application
     private JoystickInputService? _joystickInputService;
     private ButtonPatternService? _buttonPatternService;
     private CommandDispatcher? _commandDispatcher;
+    private TeamsControllerShortcuts? _teamsController;
     private NotifyIcon? _notifyIcon;
+    private ToolStripMenuItem? _learningMenuItem;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -39,9 +41,9 @@ public partial class App : System.Windows.Application
         _hwndSource = CreateHiddenHwndSource();
         _rawInputJoystick = new RawInputJoystick(_hwndSource.Handle);
         _joystickInputService = new JoystickInputService(_rawInputJoystick);
-        _buttonPatternService = new ButtonPatternService(_config.Timing);
-        var teamsController = new TeamsControllerShortcuts(_config.Teams);
-        _commandDispatcher = new CommandDispatcher(_config, teamsController);
+        _buttonPatternService = new ButtonPatternService(_config.Timing, _config.Buttons.Keys);
+        _teamsController = new TeamsControllerShortcuts(_config.Teams);
+        _commandDispatcher = new CommandDispatcher(_config, _teamsController);
 
         _joystickInputService.ButtonDown += _buttonPatternService.OnButtonDown;
         _joystickInputService.ButtonUp += _buttonPatternService.OnButtonUp;
@@ -90,6 +92,14 @@ public partial class App : System.Windows.Application
         var contextMenu = new ContextMenuStrip();
         contextMenu.Items.Add("Open config", null, (_, _) => OpenConfigFile());
         contextMenu.Items.Add("Reload config", null, (_, _) => ReloadConfig());
+        _learningMenuItem = new ToolStripMenuItem
+        {
+            CheckOnClick = true
+        };
+        UpdateLearningMenuItem();
+        _learningMenuItem.Click += (_, _) => ToggleLearningMode();
+        contextMenu.Items.Add(_learningMenuItem);
+        contextMenu.Items.Add("Test: Toggle Mute", null, (_, _) => TestToggleMute());
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add("Exit", null, (_, _) => ExitApplication());
 
@@ -138,6 +148,7 @@ public partial class App : System.Windows.Application
 
             _commandDispatcher?.UpdateConfig(newConfig);
             _buttonPatternService?.UpdateTiming(newConfig.Timing);
+            _buttonPatternService?.UpdateAllowedButtons(newConfig.Buttons.Keys);
 
             Log.Info("Configuration reloaded from disk.");
         }
@@ -152,6 +163,20 @@ public partial class App : System.Windows.Application
         _notifyIcon?.Dispose();
         _notifyIcon = null;
         Shutdown();
+    }
+
+    private void ToggleLearningMode()
+    {
+        if (_rawInputJoystick == null || _learningMenuItem == null)
+        {
+            return;
+        }
+
+        bool newState = _learningMenuItem.Checked;
+        _rawInputJoystick.LearningMode = newState;
+        Log.Info(newState ? "LearningMode ON" : "LearningMode OFF");
+        UpdateLearningMenuItem();
+        ShowLearningModeBalloon();
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -177,5 +202,55 @@ public partial class App : System.Windows.Application
     {
         WS_EX_TOOLWINDOW = 0x00000080,
         WS_EX_NOACTIVATE = 0x08000000
+    }
+
+    private void UpdateLearningMenuItem()
+    {
+        if (_learningMenuItem == null)
+        {
+            return;
+        }
+
+        bool isOn = _rawInputJoystick?.LearningMode == true;
+        _learningMenuItem.Checked = isOn;
+        _learningMenuItem.Text = isOn ? "Learning Mode (ON)" : "Learning Mode (OFF)";
+    }
+
+    private void ShowLearningModeBalloon()
+    {
+        if (_notifyIcon == null)
+        {
+            return;
+        }
+
+        bool isOn = _rawInputJoystick?.LearningMode == true;
+        _notifyIcon.BalloonTipTitle = "Learning Mode";
+        _notifyIcon.BalloonTipText = isOn ? "Learning Mode ON" : "Learning Mode OFF";
+        _notifyIcon.ShowBalloonTip(2000);
+    }
+
+    private void TestToggleMute()
+    {
+        if (_teamsController == null)
+        {
+            return;
+        }
+
+        Log.Info("Test ToggleMute starting.");
+        bool result = _teamsController.ToggleMuteDebugNoRestore();
+        Log.Info($"Test ToggleMute result={result}");
+        ShowToggleMuteBalloon(result);
+    }
+
+    private void ShowToggleMuteBalloon(bool success)
+    {
+        if (_notifyIcon == null)
+        {
+            return;
+        }
+
+        _notifyIcon.BalloonTipTitle = "Test: Toggle Mute";
+        _notifyIcon.BalloonTipText = success ? "ToggleMute sent (success)" : "ToggleMute sent (fail)";
+        _notifyIcon.ShowBalloonTip(2000);
     }
 }

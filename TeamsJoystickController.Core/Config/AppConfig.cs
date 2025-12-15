@@ -23,6 +23,10 @@ public class ButtonConfig
 public class TeamsConfig
 {
     public int SharePreferredMonitorIndex { get; set; } = 1;
+
+    public int FocusSettleMs { get; set; } = 150;
+
+    public int PostSendHoldMs { get; set; } = 350;
 }
 
 public class TimingConfig

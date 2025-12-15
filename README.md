@@ -55,3 +55,7 @@ Log file: `%APPDATA%\\TeamsJoystickController\\logs\\log.txt`. Entries are times
 ## Notes and limitations
 - Teams interaction relies on keyboard shortcuts. The app briefly brings Teams to the foreground to send the chord, then restores the previous window; a slight focus flicker is expected.
 - Reaction and share monitor selection behaviors are best-effort placeholders and may need refinement for specific Teams versions.
+
+## Build command
+dotnet build
+dotnet publish TeamsJoystickController.App -c Release -r win-x64 --self-contained true /p:PublishSingleFile=false
